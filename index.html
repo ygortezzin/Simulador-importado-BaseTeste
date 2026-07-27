@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Simulador FOB – Royal FIC</title>
+<meta name="theme-color" content="#1A3E6F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FOB Gasolina">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:        #1A3E6F;
+    --blue-dark:   #122d52;
+    --blue-mid:    #1e4a82;
+    --blue-light:  #2a5fa0;
+    --gold:        #F5A623;
+    --gold-dark:   #d4881a;
+    --bg:          #f0f4f9;
+    --surface:     #ffffff;
+    --surface2:    #e8eef7;
+    --border:      #c8d6e8;
+    --text:        #0f2444;
+    --text-muted:  #5a7399;
+    --text-dim:    #3a5880;
+    --highlight:   #ddeaf8;
+    --input-bg:    #f5f8fc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px 10px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--blue);
+    border-radius: 8px 8px 0 0;
+    padding: 10px 14px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Logo SVG inline */
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .logo-text { line-height: 1.1; }
+  .logo-text .brand {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .logo-text .brand span { color: var(--gold); }
+  .logo-text .slogan {
+    font-size: 7.5px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.3px;
+  }
+
+  .header-right { text-align: right; }
+  .sim-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--blue-dark);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── SUBHEADER ── */
+  .subheader {
+    background: var(--blue-dark);
+    padding: 5px 14px;
+    margin-bottom: 8px;
+    border-radius: 0 0 6px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .subheader span {
+    font-size: 9px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+  .subheader .dot-sep { color: var(--gold); margin: 0 4px; }
+
+  /* ── CLIENTE / META ── */
+  .client-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .client-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .client-bar input {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 7px;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .client-bar input:focus { border-color: var(--blue); }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+  .meta-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 10px;
+  }
+  .meta-card label {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .meta-card input {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .meta-card input:focus { border-color: var(--blue); }
+
+  /* ── SECTION ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .section-title {
+    background: var(--blue);
+    padding: 4px 12px;
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* ── ROW ── */
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 5px 12px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row.highlight { background: var(--highlight); }
+
+  .row-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .row-label small {
+    font-size: 8px;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+  }
+  .row-label.bold { font-weight: 700; color: var(--blue); }
+
+  .row-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: right;
+    min-width: 70px;
+  }
+  .row-value.gold  { color: var(--gold-dark); }
+  .row-value.blue  { color: var(--blue); }
+  .row-value.warn  { color: #c0392b; }
+
+  .row-input {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 6px;
+    width: 84px;
+    text-align: right;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .row-input:focus { border-color: var(--blue); }
+
+  .input-with-sign {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sign-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--blue);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sign-toggle.negative { color: #c0392b; border-color: #c0392b; background: #fbeae7; }
+
+  /* ── DOT ── */
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot.gold  { background: var(--gold); }
+  .dot.blue  { background: var(--blue-light); }
+  .dot.red   { background: #c0392b; }
+  .dot.gray  { background: var(--text-muted); }
+
+  /* ── FOB BLOCKS ── */
+  .fob-block {
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .fob-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  #fob-block {
+    background: linear-gradient(135deg, #1a3e6f, #1e4a82);
+    border: 1px solid var(--blue-light);
+  }
+  #fob-block::before { background: linear-gradient(90deg, var(--gold), #f0c060); }
+
+  #paulinia-block {
+    background: linear-gradient(135deg, #122d52, #1a3e6f);
+    border: 1px solid var(--gold-dark);
+  }
+  #paulinia-block::before { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); }
+
+  .fob-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.65);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 1px;
+  }
+  .fob-sub {
+    font-size: 8px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+  }
+  .fob-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+  #fob-block .fob-value   { color: var(--gold); }
+  #paulinia-block .fob-value { color: #ffd280; }
+
+  .fob-total-brl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1px;
+    text-align: right;
+  }
+
+  /* ── BOTÃO ── */
+  .btn-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-save:hover { border-color: var(--blue); color: var(--blue); background: var(--highlight); }
+  .btn-save:active { opacity: 0.7; }
+  .btn-save.loading { opacity: 0.5; pointer-events: none; }
+
+  /* ── SELECT PRODUTO ── */
+  .produto-bar {
+    background: var(--blue);
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .produto-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .produto-bar select {
+    background: var(--blue-mid);
+    border: 1px solid var(--blue-light);
+    border-radius: 3px;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 7px;
+    flex: 1;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23F5A623' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+  .produto-bar select:focus { border-color: var(--gold); }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 6px;
+    text-align: center;
+    font-size: 8px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .flash { animation: flash 0.3s ease; }
+  @keyframes flash { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="wrapper" id="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-area">
+      <!-- Logo Royal FIC inline SVG -->
+      <svg class="logo-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" fill="#1A3E6F" stroke="#2a5fa0" stroke-width="1.5"/>
+        <path d="M40 18 C40 18 22 36 22 50 C22 60 30 66 40 66 C50 66 58 60 58 50 C58 36 40 18 40 18Z" fill="#F5A623"/>
+      </svg>
+      <div class="logo-text">
+        <div class="brand">Royal <span>FIC</span></div>
+        <div class="slogan">O combustível que roda o Brasil</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="sim-label">Simulador</div>
+      <span class="badge" id="badge-produto">Gasolina A</span>
+    </div>
+  </div>
+
+  <div class="subheader">
+    <span>Precificação FOB Santos</span>
+    <span><span class="dot-sep">◆</span>Base USD/BRL</span>
+  </div>
+
+  <!-- Produto -->
+  <div class="produto-bar">
+    <span class="produto-label">Produto</span>
+    <select id="produto" onchange="atualizarProduto()">
+      <option value="gasolina">Gasolina A</option>
+      <option value="s10">S10 A</option>
+      <option value="s500">S500 A</option>
+    </select>
+  </div>
+
+  <!-- Cliente -->
+  <div class="client-bar">
+    <span class="client-label">Cliente</span>
+    <input type="text" id="cliente" placeholder="Digite o cliente..." required />
+  </div>
+
+  <!-- Data + Volume -->
+  <div class="meta-row">
+    <div class="meta-card">
+      <label>Data</label>
+      <input type="text" id="data" placeholder="ex: 15/mai" required />
+    </div>
+    <div class="meta-card">
+      <label>Volume (m³)</label>
+      <input type="number" id="volume" placeholder="1" min="1" step="1" />
+    </div>
+  </div>
+
+  <!-- Seção 1 -->
+  <div class="section">
+    <div class="section-title">Preço Base — USD/galão</div>
+    <div class="row">
+      <div class="row-label"><span class="dot gold"></span> <span id="rbob-label">RBOB</span></div>
+      <input class="row-input" id="rbob" type="number" placeholder="0,0000" step="0.0001" required />
+    </div>
+    <div class="row">
+      <div class="row-label"><span class="dot red"></span> FEE</div>
+      <div class="input-with-sign">
+        <button type="button" class="sign-toggle" id="fee-sign" onclick="toggleFeeSign()">+</button>
+        <input class="row-input" id="fee" type="text" inputmode="decimal" placeholder="0,0000" required />
+      </div>
+    </div>
+    <div class="row highlight">
+      <div class="row-label bold">TOTAL</div>
+      <div class="row-value blue" id="total">—</div>
+    </div>
+  </div>
+
+  <!-- Seção 2 -->
+  <div class="section">
+    <div class="section-title">Câmbio e Conversão</div>
+    <div class="row highlight">
+      <div class="row-label bold">CBM <small>(TOTAL × 0,264172)</small></div>
+      <div class="row-value" id="cbm">—</div>
+    </div>
+    <div class="row">
+      <div class="row-label"><span class="dot blue"></span> FX <small>(USD/BRL)</small></div>
+      <input class="row-input" id="fx" type="number" placeholder="0,0000" step="0.0001" required />
+    </div>
+    <div class="row highlight">
+      <div class="row-label bold">BRL <small>(CBM × FX)</small></div>
+      <div class="row-value blue" id="brl">—</div>
+    </div>
+  </div>
+
+  <!-- Seção 3 -->
+  <div class="section">
+    <div class="section-title">Encargos e Tributos</div>
+    <div class="row">
+      <div class="row-label"><span class="dot gray"></span> CUSTOS</div>
+      <input class="row-input" id="custos" type="number" value="0.1700" step="0.0001" />
+    </div>
+    <div class="row">
+      <div class="row-label"><span class="dot gray"></span> <span id="icms-label">ICMS / CIDE</span></div>
+      <input class="row-input" id="icms" type="number" value="2.3429" step="0.0001" />
+    </div>
+    <div class="row">
+      <div class="row-label"><span class="dot gray"></span> PIS / COFINS</div>
+      <input class="row-input" id="pis" type="number" value="0.7925" step="0.0001" />
+    </div>
+    <div class="row highlight">
+      <div class="row-label bold">Total Encargos</div>
+      <div class="row-value warn" id="encargos">—</div>
+    </div>
+  </div>
+
+  <!-- FOB Santos -->
+  <div class="fob-block" id="fob-block">
+    <div>
+      <div class="fob-label">FOB Santos</div>
+      <div class="fob-sub">R$/L — preço final</div>
+    </div>
+    <div style="text-align:right">
+      <div class="fob-value" id="fob">—</div>
+      <div class="fob-total-brl" id="fob-total"></div>
+    </div>
+  </div>
+
+  <!-- Paulínia -->
+  <div class="fob-block" id="paulinia-block">
+    <div>
+      <div class="fob-label">Paulínia</div>
+      <div class="fob-sub">R$/L — Santos + R$ 0,10/L</div>
+    </div>
+    <div style="text-align:right">
+      <div class="fob-value" id="paulinia">—</div>
+      <div class="fob-total-brl" id="paulinia-total"></div>
+    </div>
+  </div>
+
+  <!-- Comparativo Nacional -->
+  <div class="section" id="bombeio-section">
+    <div class="section-title">Comparativo — Produto Nacional (Bombeio Petrobras)</div>
+    <div class="row">
+      <div class="row-label"><span class="dot gray"></span> Bombeio Paulínia <small id="bombeio-data-ref"></small></div>
+      <div class="row-value blue" id="bombeio-valor">—</div>
+    </div>
+    <div class="row highlight">
+      <div class="row-label bold">Spread (Importado − Nacional)</div>
+      <div class="row-value" id="bombeio-spread">—</div>
+    </div>
+  </div>
+
+  <button class="btn-save" id="btn-save" onclick="salvarImagem()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Salvar como imagem
+  </button>
+
+  <div class="footer">Royal FIC · Valores FOB em R$/L · Cálculo automático</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+
+  function fmt(n) {
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  }
+  function fmtBRL(n) {
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calc() {
+    const rbob   = parseFloat($('rbob').value)   || 0;
+    const fee    = parseFloat(($('fee').value || '').replace(',', '.')) || 0;
+    const fx     = parseFloat($('fx').value)     || 0;
+    const custos = parseFloat($('custos').value) || 0;
+    const icms   = parseFloat($('icms').value)   || 0;
+    const pis    = parseFloat($('pis').value)    || 0;
+    const volRaw = parseFloat($('volume').value);
+    const vol    = (!isNaN(volRaw) && volRaw > 0) ? volRaw : 1;
+
+    const total    = rbob + fee;
+    const cbm      = total * 0.264172;
+    const brl      = cbm * fx;
+    const encargos = custos + icms + pis;
+    const fob_L    = brl + encargos;
+    const paul_L   = fob_L + 0.10;
+
+    $('total').textContent    = fmt(total);
+    $('cbm').textContent      = fmt(cbm);
+    $('brl').textContent      = fmt(brl);
+    $('encargos').textContent = fmt(encargos);
+    $('fob').textContent      = fmt(fob_L);
+    $('fob-total').textContent = `Total (${vol} m³): R$ ${fmtBRL(fob_L * vol * 1000)}`;
+    $('paulinia').textContent  = fmt(paul_L);
+    $('paulinia-total').textContent = `Total (${vol} m³): R$ ${fmtBRL(paul_L * vol * 1000)}`;
+
+    ['fob-block','paulinia-block'].forEach(id => {
+      const el = $(id);
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+    });
+  }
+
+  function gerarCanvas() {
+    const DPR = 2, W = 560, PAD = 32, IW = W - PAD * 2;
+    const cliente = $('cliente').value || '';
+    const data    = $('data').value    || '';
+    const volume  = $('volume').value  || '';
+
+    const nomesProduto = { gasolina: 'Gasolina A', s10: 'S10 A', s500: 'S500 A' };
+    const produto = nomesProduto[$('produto').value] || 'Gasolina A';
+    const rbobLabel = $('rbob-label').textContent;
+
+    const rows = [
+      { label: rbobLabel,      value: $('rbob').value,           color: '#d4881a', section: 'Preço Base — USD/galão' },
+      { label: 'FEE',          value: $('fee').value,            color: '#c0392b' },
+      { label: 'TOTAL',        value: $('total').textContent,    color: '#1A3E6F', bold: true, highlight: true },
+      { label: 'CBM',          value: $('cbm').textContent,      color: '#1A3E6F', bold: true, highlight: true, section: 'Câmbio e Conversão' },
+      { label: 'FX (USD/BRL)', value: $('fx').value,             color: '#2a5fa0' },
+      { label: 'BRL',          value: $('brl').textContent,      color: '#1A3E6F', bold: true, highlight: true },
+      { label: 'CUSTOS',       value: $('custos').value,         color: '#5a7399', section: 'Encargos e Tributos' },
+      { label: $('icms-label').textContent, value: $('icms').value, color: '#5a7399' },
+      { label: 'PIS / COFINS',value: $('pis').value,            color: '#5a7399' },
+      { label: 'Total Encargos', value: $('encargos').textContent, color: '#c0392b', bold: true, highlight: true },
+    ];
+    let secs = 0; rows.forEach(r => { if (r.section) secs++; });
+    const H = HDR_H + rows.length * ROW_H + secs * SEC_H + FOB_H * 2 + 20 + FTR_H + PAD * 2;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(DPR, DPR);
+
+    // Fundo
+    ctx.fillStyle = '#f0f4f9'; ctx.fillRect(0, 0, W, H);
+
+    let y = 0;
+
+    // Header azul
+    ctx.fillStyle = '#1A3E6F';
+    roundRect(ctx, 0, 0, W, 56, 8, '#1A3E6F');
+
+    // Gota (logo simplificado)
+    ctx.fillStyle = '#2a5fa0';
+    ctx.beginPath(); ctx.arc(PAD + 16, 28, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#F5A623';
+    ctx.beginPath();
+    ctx.moveTo(PAD + 16, 14);
+    ctx.bezierCurveTo(PAD + 8, 24, PAD + 6, 30, PAD + 16, 38);
+    ctx.bezierCurveTo(PAD + 26, 30, PAD + 24, 24, PAD + 16, 14);
+    ctx.fill();
+
+    // Royal FIC
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('Royal', PAD + 40, 32);
+    ctx.fillStyle = '#F5A623';
+    ctx.fillText(' FIC', PAD + 92, 32);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '9px sans-serif';
+    ctx.fillText('O combustível que roda o Brasil', PAD + 40, 46);
+
+    // Badge produto
+    const badgeW = Math.max(72, ctx.measureText(produto.toUpperCase()).width + 16);
+    roundRect(ctx, W - PAD - badgeW, 16, badgeW, 18, 2, '#F5A623');
+    ctx.fillStyle = '#122d52'; ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(produto.toUpperCase(), W - PAD - badgeW / 2, 29);
+    ctx.textAlign = 'left';
+
+    // Subheader
+    ctx.fillStyle = '#122d52';
+    ctx.fillRect(0, 56, W, 24);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '9px sans-serif';
+    ctx.fillText('Precificação FOB Santos  ◆  Base USD/BRL', PAD, 72);
+
+    y = 88;
+
+    // Cliente / Data / Vol
+    roundRect(ctx, PAD, y, IW, 34, 5, '#ffffff', '#c8d6e8');
+    ctx.fillStyle = '#1A3E6F'; ctx.font = 'bold 8px sans-serif';
+    ctx.fillText('CLIENTE', PAD + 10, y + 13);
+    ctx.fillStyle = '#0f2444'; ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(cliente, PAD + 80, y + 13);
+    ctx.fillStyle = '#1A3E6F'; ctx.font = 'bold 8px sans-serif';
+    ctx.fillText('DATA', PAD + 10, y + 27);
+    ctx.fillStyle = '#3a5880'; ctx.font = '11px monospace';
+    ctx.fillText(data, PAD + 80, y + 27);
+    ctx.fillStyle = '#1A3E6F'; ctx.font = 'bold 8px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`VOL: ${volume} m³`, PAD + IW - 10, y + 20);
+    ctx.textAlign = 'left';
+
+    y += 44;
+
+    // Rows
+    rows.forEach(row => {
+      if (row.section) {
+        ctx.fillStyle = '#1A3E6F';
+        ctx.fillRect(PAD, y, IW, SEC_H);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = 'bold 8px sans-serif';
+        ctx.fillText(row.section.toUpperCase(), PAD + 10, y + 17);
+        y += SEC_H;
+      }
+      ctx.fillStyle = row.highlight ? '#ddeaf8' : '#ffffff';
+      ctx.fillRect(PAD, y, IW, ROW_H);
+      ctx.strokeStyle = '#c8d6e8'; ctx.lineWidth = 0.5;
+      ctx.strokeRect(PAD, y, IW, ROW_H);
+
+      ctx.fillStyle = row.bold ? '#1A3E6F' : '#3a5880';
+      ctx.font = row.bold ? 'bold 11px sans-serif' : '11px sans-serif';
+      ctx.fillText(row.label, PAD + 10, y + ROW_H / 2 + 4);
+
+      ctx.fillStyle = row.color; ctx.font = '11px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(row.value, PAD + IW - 10, y + ROW_H / 2 + 4);
+      ctx.textAlign = 'left';
+      y += ROW_H;
+    });
+
+    y += 12;
+
+    // FOB Santos
+    drawFobCanvas(ctx, PAD, y, IW, FOB_H, {
+      label: 'FOB SANTOS', sub: 'R$/L — preço final',
+      value: fobVal, total: fobTot,
+      bg1: '#1A3E6F', bg2: '#1e4a82',
+      topColor: '#F5A623', valColor: '#F5A623'
+    });
+    y += FOB_H + 8;
+
+    // Paulínia
+    drawFobCanvas(ctx, PAD, y, IW, FOB_H, {
+      label: 'PAULÍNIA', sub: 'R$/L — Santos + R$ 0,10/L',
+      value: paulVal, total: paulTot,
+      bg1: '#122d52', bg2: '#1A3E6F',
+      topColor: '#d4881a', valColor: '#ffd280'
+    });
+    y += FOB_H + 14;
+
+    // Footer
+    ctx.fillStyle = '#5a7399'; ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Royal FIC · Valores FOB em R$/L · Cálculo automático', W / 2, y + 14);
+    ctx.textAlign = 'left';
+
+    return canvas;
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    if (fill)   { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+  }
+
+  function drawFobCanvas(ctx, x, y, w, h, o) {
+    const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+    grad.addColorStop(0, o.bg1); grad.addColorStop(1, o.bg2);
+    roundRect(ctx, x, y, w, h, 6, null, null);
+    ctx.fillStyle = grad; ctx.fill();
+    roundRect(ctx, x, y, w, h, 6, null, o.topColor);
+    ctx.fillStyle = o.topColor; ctx.fillRect(x + 6, y, w - 12, 3);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = 'bold 9px sans-serif';
+    ctx.fillText(o.label, x + 14, y + 22);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '8px sans-serif';
+    ctx.fillText(o.sub, x + 14, y + 36);
+    ctx.fillStyle = o.valColor; ctx.font = 'bold 26px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(o.value, x + w - 14, y + 44);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '9px monospace';
+    ctx.fillText(o.total, x + w - 14, y + 60);
+    ctx.textAlign = 'left';
+  }
+
+  async function salvarImagem() {
+    const btn = $('btn-save');
+    btn.classList.add('loading');
+    btn.innerHTML = 'Gerando imagem…';
+
+    const cliente = $('cliente').value || 'simulador';
+    const data    = $('data').value    || 'data';
+    const nome    = `RoyalFIC_FOB_${cliente}_${data}.png`.replace(/[\/\\: ]/g, '_');
+
+    try {
+      const canvas = gerarCanvas();
+      canvas.toBlob(async blob => {
+        const file = new File([blob], nome, { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Royal FIC — Simulador FOB' });
+        } else {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const win = window.open('', '_blank');
+            if (win) {
+              win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Royal FIC FOB</title>
+                <style>body{margin:0;background:#f0f4f9;display:flex;flex-direction:column;align-items:center;padding:20px;}
+                img{max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+                p{color:#5a7399;font-size:12px;margin-top:12px;text-align:center;font-family:sans-serif;}</style></head>
+                <body><img src="${reader.result}"/><p>Pressione e segure para salvar na galeria</p></body></html>`);
+              win.document.close();
+            }
+          };
+          reader.readAsDataURL(blob);
+        }
+        restaurarBtn(btn);
+      }, 'image/png');
+    } catch(e) { restaurarBtn(btn); }
+  }
+
+  function restaurarBtn(btn) {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Salvar como imagem`;
+  }
+
+  function calc() {
+    const rbob   = parseFloat($('rbob').value);
+    const fee    = parseFloat($('fee').value.replace(',', '.'));
+    const fx     = parseFloat($('fx').value);
+    const custos = parseFloat($('custos').value) || 0;
+    const icms   = parseFloat($('icms').value)   || 0;
+    const pis    = parseFloat($('pis').value)    || 0;
+    const volRaw = parseFloat($('volume').value);
+    const vol    = (!isNaN(volRaw) && volRaw > 0) ? volRaw : 1;
+
+    // Volume é opcional (considera 1 quando em branco); demais campos continuam obrigatórios
+    const obrigatoriosOk = !isNaN(rbob) && !isNaN(fee) && !isNaN(fx);
+
+    if (!obrigatoriosOk) {
+      $('total').textContent    = '—';
+      $('cbm').textContent      = '—';
+      $('brl').textContent      = '—';
+      $('encargos').textContent = '—';
+      $('fob').textContent      = '—';
+      $('paulinia').textContent = '—';
+      $('fob-total').textContent    = '';
+      $('paulinia-total').textContent = '';
+      $('bombeio-valor').textContent  = '—';
+      $('bombeio-spread').textContent = '—';
+      return;
+    }
+
+    const total    = rbob + fee;
+    const cbm      = total * 0.264172;
+    const brl      = cbm * fx;
+    const encargos = custos + icms + pis;
+    const fob_L    = brl + encargos;
+    const paul_L   = fob_L + 0.10;
+
+    $('total').textContent    = fmt(total);
+    $('cbm').textContent      = fmt(cbm);
+    $('brl').textContent      = fmt(brl);
+    $('encargos').textContent = fmt(encargos);
+    $('fob').textContent      = fmt(fob_L);
+    $('fob-total').textContent = `Total (${vol} m³): R$ ${fmtBRL(fob_L * vol * 1000)}`;
+    $('paulinia').textContent  = fmt(paul_L);
+    $('paulinia-total').textContent = `Total (${vol} m³): R$ ${fmtBRL(paul_L * vol * 1000)}`;
+
+    atualizarComparativoBombeio(paul_L, vol);
+
+    ['fob-block','paulinia-block'].forEach(id => {
+      const el = $(id);
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+    });
+  }
+
+  function atualizarProduto() {
+    const produto = $('produto').value;
+    const isGasolina = produto === 'gasolina';
+
+    // Troca label RBOB ↔ HO
+    $('rbob-label').textContent = isGasolina ? 'RBOB' : 'HO';
+
+    // Troca label e valor ICMS/CIDE ↔ ICMS
+    $('icms-label').textContent = isGasolina ? 'ICMS / CIDE' : 'ICMS';
+    $('icms').value = isGasolina ? '2.3429' : '1.2388';
+
+    // Atualiza PIS/COFINS conforme produto
+    $('pis').value = isGasolina ? '0.7925' : '0.3515';
+
+    // Atualiza badge no header
+    const nomes = { gasolina: 'Gasolina A', s10: 'S10 A', s500: 'S500 A' };
+    $('badge-produto').textContent = nomes[produto];
+
+    calc();
+  }
+
+  function toggleFeeSign() {
+    const input = $('fee');
+    const btn = $('fee-sign');
+    let v = input.value.trim();
+    if (v.startsWith('-')) {
+      v = v.slice(1);
+      btn.textContent = '+';
+      btn.classList.remove('negative');
+    } else {
+      v = v ? '-' + v : '-';
+      btn.textContent = '−';
+      btn.classList.add('negative');
+    }
+    input.value = v;
+    calc();
+  }
+
+  // Permite apenas dígitos, um separador decimal e o sinal de menos no início
+  $('fee').addEventListener('input', () => {
+    const input = $('fee');
+    const btn = $('fee-sign');
+    let v = input.value;
+    const negative = v.trim().startsWith('-');
+    v = v.replace(/[^0-9.,]/g, '');
+    const firstSep = v.search(/[.,]/);
+    if (firstSep !== -1) {
+      v = v.slice(0, firstSep + 1) + v.slice(firstSep + 1).replace(/[.,]/g, '');
+    }
+    input.value = negative ? '-' + v : v;
+    btn.textContent = negative ? '−' : '+';
+    btn.classList.toggle('negative', negative);
+  });
+
+  // ── Comparativo com produto nacional (Bombeio Petrobras) ──
+  let bombeioData = null;
+
+  async function carregarBombeio() {
+    try {
+      // cache-buster garante que uma atualização na base seja refletida na hora
+      const resp = await fetch('./bombeio.xlsx?t=' + Date.now(), { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const buf = await resp.arrayBuffer();
+      const wb  = XLSX.read(buf, { type: 'array', cellDates: true });
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      // range: 2 pula as 2 linhas de instrução; a linha 3 (índice 2) é o cabeçalho
+      const linhas = XLSX.utils.sheet_to_json(ws, { range: 2, defval: '' });
+
+      const produtos = {};
+      let atualizadoEm = '';
+      linhas.forEach(l => {
+        const codigo = String(l.Produto || '').trim().toLowerCase();
+        if (!codigo) return;
+        produtos[codigo] = {
+          nome: l.Nome,
+          paulinia: Number(l.Preco_RS_L) || 0
+        };
+        let dataRef = l.Atualizado_em;
+        if (dataRef instanceof Date) {
+          dataRef = dataRef.toLocaleDateString('pt-BR');
+        }
+        if (dataRef) atualizadoEm = String(dataRef);
+      });
+
+      bombeioData = { atualizado_em: atualizadoEm, produtos };
+    } catch (e) {
+      bombeioData = null;
+      console.warn('Não foi possível carregar bombeio.xlsx', e);
+    }
+    calc();
+  }
+
+  function atualizarComparativoBombeio(paul_L, vol) {
+    const produto = $('produto').value;
+    const info = bombeioData && bombeioData.produtos && bombeioData.produtos[produto];
+    const bombeio_L = info ? Number(info.paulinia) : null;
+
+    $('bombeio-data-ref').textContent = bombeioData && bombeioData.atualizado_em
+      ? `(atualizado em ${bombeioData.atualizado_em})` : '';
+
+    if (!bombeio_L || bombeio_L <= 0) {
+      $('bombeio-valor').textContent  = 'sem dado';
+      $('bombeio-spread').textContent = '—';
+      return;
+    }
+
+    const spread   = paul_L - bombeio_L;
+    const spreadEl = $('bombeio-spread');
+
+    $('bombeio-valor').textContent  = fmt(bombeio_L);
+    spreadEl.textContent = `${spread >= 0 ? '+' : ''}${fmt(spread)}`;
+    spreadEl.classList.toggle('warn', spread > 0);
+    spreadEl.classList.toggle('blue', spread <= 0);
+  }
+
+  const inputs = ['rbob','fee','fx','custos','icms','pis','volume'];
+  inputs.forEach(id => $(id).addEventListener('input', calc));
+  // Não chama calc() no início — campos obrigatórios estão em branco
+
+  carregarBombeio();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
