@@ -1,5 +1,6 @@
-const CACHE = 'royalfic-fob-gasolina-v7';
+const CACHE = 'royalfic-fob-gasolina-v8';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const BASES_DINAMICAS = ['bombeio.xlsx', 'frete.xlsx'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -14,9 +15,9 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // bombeio.xlsx: sempre busca a versão mais recente da rede (não usa cache),
+  // bombeio.xlsx e frete.xlsx: sempre busca a versão mais recente da rede (não usa cache),
   // caindo para o cache apenas se estiver totalmente offline
-  if (e.request.url.includes('bombeio.xlsx')) {
+  if (BASES_DINAMICAS.some(nome => e.request.url.includes(nome))) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     );

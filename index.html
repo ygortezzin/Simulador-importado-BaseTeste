@@ -461,7 +461,7 @@
   </div>
 
   <div class="subheader">
-    <span>Precificação FOB Santos</span>
+    <span id="subheader-porto">Precificação FOB Santos</span>
     <span><span class="dot-sep">◆</span>Base USD/BRL</span>
   </div>
 
@@ -472,6 +472,15 @@
       <option value="gasolina">Gasolina A</option>
       <option value="s10">S10 A</option>
       <option value="s500">S500 A</option>
+    </select>
+  </div>
+
+  <!-- Porto -->
+  <div class="produto-bar">
+    <span class="produto-label">Porto</span>
+    <select id="porto" onchange="atualizarPorto()">
+      <option value="santos" selected>Santos</option>
+      <option value="paranagua">Paranaguá</option>
     </select>
   </div>
 
@@ -554,7 +563,7 @@
   <!-- FOB Santos -->
   <div class="fob-block" id="fob-block">
     <div>
-      <div class="fob-label">FOB Santos</div>
+      <div class="fob-label" id="fob-label">FOB Santos</div>
       <div class="fob-sub">R$/L — preço final</div>
     </div>
     <div style="text-align:right">
@@ -563,11 +572,11 @@
     </div>
   </div>
 
-  <!-- Paulínia -->
+  <!-- Base (Paulínia / Araucária) -->
   <div class="fob-block" id="paulinia-block">
     <div>
-      <div class="fob-label">Paulínia</div>
-      <div class="fob-sub">R$/L — Santos + R$ 0,10/L</div>
+      <div class="fob-label" id="paulinia-label">Paulínia</div>
+      <div class="fob-sub" id="paulinia-sub">R$/L — Santos + R$ 0,1000/L</div>
     </div>
     <div style="text-align:right">
       <div class="fob-value" id="paulinia">—</div>
@@ -579,7 +588,7 @@
   <div class="section" id="bombeio-section">
     <div class="section-title">Comparativo — Produto Nacional (Bombeio Petrobras)</div>
     <div class="row">
-      <div class="row-label"><span class="dot gray"></span> Bombeio Paulínia <small id="bombeio-data-ref"></small></div>
+      <div class="row-label"><span class="dot gray"></span> Bombeio <span id="bombeio-label-base">Paulínia</span> <small id="bombeio-data-ref"></small></div>
       <div class="row-value blue" id="bombeio-valor">—</div>
     </div>
     <div class="row highlight">
@@ -856,6 +865,12 @@
     btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Salvar como imagem`;
   }
 
+  const PORTO_NOMES = { santos: 'Santos', paranagua: 'Paranaguá' };
+  const DEFAULT_FRETES = {
+    santos:    { baseCodigo: 'paulinia',  baseNome: 'Paulínia',  frete: 0.10 },
+    paranagua: { baseCodigo: 'araucaria', baseNome: 'Araucária', frete: 0.045 }
+  };
+
   function calc() {
     const rbob   = parseFloat($('rbob').value);
     const fee    = parseFloat($('fee').value.replace(',', '.'));
@@ -865,6 +880,17 @@
     const pis    = parseFloat($('pis').value)    || 0;
     const volRaw = parseFloat($('volume').value);
     const vol    = (!isNaN(volRaw) && volRaw > 0) ? volRaw : 1;
+
+    // Porto e frete/base correspondente são atualizados sempre, mesmo sem os campos obrigatórios
+    const porto            = $('porto').value || 'santos';
+    const portoNomeExibicao = PORTO_NOMES[porto] || 'Santos';
+    const freteInfo = (fretesData && fretesData[porto]) || DEFAULT_FRETES[porto] || DEFAULT_FRETES.santos;
+
+    $('subheader-porto').textContent = `Precificação FOB ${portoNomeExibicao}`;
+    $('fob-label').textContent       = `FOB ${portoNomeExibicao}`;
+    $('paulinia-label').textContent  = freteInfo.baseNome;
+    $('paulinia-sub').textContent    = `R$/L — ${portoNomeExibicao} + R$ ${fmt(freteInfo.frete)}/L`;
+    $('bombeio-label-base').textContent = freteInfo.baseNome;
 
     // Volume é opcional (considera 1 quando em branco); demais campos continuam obrigatórios
     const obrigatoriosOk = !isNaN(rbob) && !isNaN(fee) && !isNaN(fx);
@@ -888,7 +914,7 @@
     const brl      = cbm * fx;
     const encargos = custos + icms + pis;
     const fob_L    = brl + encargos;
-    const paul_L   = fob_L + 0.10;
+    const paul_L   = fob_L + freteInfo.frete;
 
     $('total').textContent    = fmt(total);
     $('cbm').textContent      = fmt(cbm);
@@ -899,7 +925,7 @@
     $('paulinia').textContent  = fmt(paul_L);
     $('paulinia-total').textContent = `Total (${vol} m³): R$ ${fmtBRL(paul_L * vol * 1000)}`;
 
-    atualizarComparativoBombeio(paul_L, vol);
+    atualizarComparativoBombeio(paul_L, freteInfo.baseCodigo, freteInfo.baseNome);
 
     ['fob-block','paulinia-block'].forEach(id => {
       const el = $(id);
@@ -907,6 +933,10 @@
       void el.offsetWidth;
       el.classList.add('flash');
     });
+  }
+
+  function atualizarPorto() {
+    calc();
   }
 
   function atualizarProduto() {
@@ -963,6 +993,36 @@
     btn.classList.toggle('negative', negative);
   });
 
+  // ── Frete Porto → Base (Santos→Paulínia / Paranaguá→Araucária) ──
+  let fretesData = null;
+
+  async function carregarFretes() {
+    try {
+      const resp = await fetch('./frete.xlsx?t=' + Date.now(), { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const buf = await resp.arrayBuffer();
+      const wb  = XLSX.read(buf, { type: 'array', cellDates: true });
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      const linhas = XLSX.utils.sheet_to_json(ws, { range: 2, defval: '' });
+
+      const data = {};
+      linhas.forEach(l => {
+        const portoCodigo = String(l.Porto || '').trim().toLowerCase();
+        if (!portoCodigo) return;
+        data[portoCodigo] = {
+          baseCodigo: String(l.Destino_Codigo || '').trim().toLowerCase(),
+          baseNome: l.Destino_Nome,
+          frete: Number(l.Frete_RS_L) || 0
+        };
+      });
+      fretesData = data;
+    } catch (e) {
+      fretesData = null;
+      console.warn('Não foi possível carregar frete.xlsx', e);
+    }
+    calc();
+  }
+
   // ── Comparativo com produto nacional (Bombeio Petrobras) ──
   let bombeioData = null;
 
@@ -980,12 +1040,14 @@
       const produtos = {};
       let atualizadoEm = '';
       linhas.forEach(l => {
-        const codigo = String(l.Produto || '').trim().toLowerCase();
-        if (!codigo) return;
-        produtos[codigo] = {
-          nome: l.Nome,
-          paulinia: Number(l.Preco_RS_L) || 0
-        };
+        const codigoProduto = String(l.Produto || '').trim().toLowerCase();
+        const codigoFilial  = String(l.Filial  || '').trim().toLowerCase();
+        if (!codigoProduto || !codigoFilial) return;
+        if (!produtos[codigoProduto]) {
+          produtos[codigoProduto] = { nome: l.Nome, precos: {} };
+        }
+        produtos[codigoProduto].precos[codigoFilial] = Number(l.Preco_RS_L) || 0;
+
         let dataRef = l.Atualizado_em;
         if (dataRef instanceof Date) {
           dataRef = dataRef.toLocaleDateString('pt-BR');
@@ -1001,11 +1063,12 @@
     calc();
   }
 
-  function atualizarComparativoBombeio(paul_L, vol) {
+  function atualizarComparativoBombeio(paul_L, filialCodigo, filialNome) {
     const produto = $('produto').value;
     const info = bombeioData && bombeioData.produtos && bombeioData.produtos[produto];
-    const bombeio_L = info ? Number(info.paulinia) : null;
+    const bombeio_L = info && info.precos ? Number(info.precos[filialCodigo]) : null;
 
+    $('bombeio-label-base').textContent = filialNome;
     $('bombeio-data-ref').textContent = bombeioData && bombeioData.atualizado_em
       ? `(atualizado em ${bombeioData.atualizado_em})` : '';
 
@@ -1028,6 +1091,7 @@
   inputs.forEach(id => $(id).addEventListener('input', calc));
   // Não chama calc() no início — campos obrigatórios estão em branco
 
+  carregarFretes();
   carregarBombeio();
 
   if ('serviceWorker' in navigator) {
